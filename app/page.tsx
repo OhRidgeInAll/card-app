@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import type { CollectionRow } from '@/types/card';
+import QuantityControls from './QuantityControls';
 
 export default function CollectionPage() {
   const items = db
@@ -24,9 +25,14 @@ export default function CollectionPage() {
         }}
       >
         <h1 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Collection</h1>
-        <Link href="/add" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
-          + Add cards
-        </Link>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Link href="/decks" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
+            Decks
+          </Link>
+          <Link href="/add" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
+            + Add cards
+          </Link>
+        </div>
       </div>
 
       {items.length === 0 ? (
@@ -56,7 +62,9 @@ export default function CollectionPage() {
                 <td style={{ padding: '0.5rem' }}>{item.game}</td>
                 <td style={{ padding: '0.5rem' }}>{item.set_code ?? '—'}</td>
                 <td style={{ padding: '0.5rem' }}>{item.condition}</td>
-                <td style={{ padding: '0.5rem' }}>{item.quantity_owned}</td>
+                <td style={{ padding: '0.5rem' }}>
+                  <QuantityControls itemId={item.id} quantity={item.quantity_owned} />
+                </td>
               </tr>
             ))}
           </tbody>

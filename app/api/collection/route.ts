@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { upsertCard } from '@/lib/cards';
 import type { CollectionRow } from '@/types/card';
 
 export async function GET() {
@@ -27,18 +28,6 @@ export async function POST(request: NextRequest) {
   const qty = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 1;
   const cond = typeof condition === 'string' && condition.length > 0 ? condition : 'NM';
 
-  const upsertCard = db.prepare(
-    `INSERT INTO cards (game, external_id, name, set_code, image_url, attributes)
-     VALUES (@game, @external_id, @name, @set_code, @image_url, @attributes)
-     ON CONFLICT (game, external_id) DO UPDATE SET
-       name = excluded.name,
-       set_code = excluded.set_code,
-       image_url = excluded.image_url,
-       attributes = excluded.attributes`
-  );
-
-  const getCard = db.prepare(`SELECT id FROM cards WHERE game = ? AND external_id = ?`);
-
   const upsertCollectionItem = db.prepare(
     `INSERT INTO collection_items (card_id, quantity_owned, condition)
      VALUES (@card_id, @quantity, @condition)
@@ -47,24 +36,15 @@ export async function POST(request: NextRequest) {
   );
 
   const addToCollection = db.transaction(() => {
-    upsertCard.run({
-      game,
-      external_id,
-      name,
-      set_code: set_code ?? null,
-      image_url: image_url ?? null,
-      attributes: attributes ? JSON.stringify(attributes) : null,
-    });
-
-    const card = getCard.get(game, external_id) as { id: number };
+    const cardId = upsertCard(db, { game, external_id, name, set_code, image_url, attributes });
 
     upsertCollectionItem.run({
-      card_id: card.id,
+      card_id: cardId,
       quantity: qty,
       condition: cond,
     });
 
-    return card.id;
+    return cardId;
   });
 
   const cardId = addToCollection();
