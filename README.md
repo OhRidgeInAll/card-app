@@ -1,9 +1,16 @@
-# Card collection app — phase 1 (MTG only)
+# Card collection app
 
-## What this phase does
+## What this currently does
 - Search Magic: the Gathering cards via Scryfall and add them to your collection
 - View your collection in a simple table
 - Data lives in a local SQLite file at `data/collection.db` — back it up by copying that one file
+
+## What the vision is
+- Full functionality for Yugioh, HoloOCG, and MtG
+- Handles deck instances using copies from your collection
+- Price sourcing (different implementation for each game due to tcgplayer api being closed)
+- Card tagging
+- Missing card logic
 
 ## Setup
 1. Install Node.js 18+ if you don't already have it.
@@ -36,15 +43,3 @@
 - `app/api/collection` — GET lists your collection, POST adds/increments a card
 - `app/page.tsx` — collection view
 - `app/add/page.tsx` — search + add flow
-
-## Why no "missing card" column anywhere
-That logic hasn't been built yet (it lands in phase 2, with decks) — but by
-design it will never live in a stored column. A deck's missing/available
-counts get computed at query time from `collection_items`, so pulling a card
-from one deck to build another can't leave stale numbers behind.
-
-## What's not here yet (later phases)
-- Decks, tagging, and the "missing card" logic
-- Yugioh and Hololive TCG support
-- TCGplayer-sourced pricing display (Scryfall's response already includes it
-  under `attributes.prices` on every card — just not shown in the UI yet)
