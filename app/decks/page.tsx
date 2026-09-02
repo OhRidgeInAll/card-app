@@ -31,9 +31,14 @@ export default function DecksPage() {
         }}
       >
         <h1 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Decks</h1>
-        <Link href="/" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
-          Collection
-        </Link>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Link href="/import" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
+            Bulk import
+          </Link>
+          <Link href="/" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
+            Collection
+          </Link>
+        </div>
       </div>
 
       <NewDeckForm />

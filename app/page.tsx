@@ -29,6 +29,9 @@ export default function CollectionPage() {
           <Link href="/decks" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
             Decks
           </Link>
+          <Link href="/import" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
+            Bulk import
+          </Link>
           <Link href="/add" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
             + Add cards
           </Link>
