@@ -11,15 +11,17 @@ export type ResolveOutcome =
   | { status: 'not_found' }
   | { status: 'error' };
 
-const USER_AGENT = 'personal-card-collection-app';
+export const USER_AGENT = 'personal-card-collection-app';
 
-// Scryfall asks for 50-100ms between requests. This leaves some headroom so
-// a fast local connection doesn't creep over their limit on a long import.
-export const SCRYFALL_REQUEST_DELAY_MS = 120;
+// Scryfall's documented hard limit for /cards/named, /cards/search,
+// /cards/random, and /cards/collection is 2 requests/second (500ms apart).
+// This adds headroom above that floor. See lib/scryfall-cache.ts for the
+// local cache that keeps most lookups from hitting this at all.
+export const SCRYFALL_REQUEST_DELAY_MS = 550;
 
 const MAX_ATTEMPTS = 3;
 
-function normalize(c: any): ScryfallResolvedCard {
+export function normalizeScryfallCard(c: any): ScryfallResolvedCard {
   return {
     external_id: c.id,
     name: c.name,
@@ -46,7 +48,7 @@ export async function searchCards(query: string): Promise<ScryfallResolvedCard[]
   }
 
   const data = await res.json();
-  return (data.data ?? []).slice(0, 20).map(normalize);
+  return (data.data ?? []).slice(0, 20).map(normalizeScryfallCard);
 }
 
 /**
@@ -79,7 +81,7 @@ export async function resolveCardByName(name: string, attempt = 1): Promise<Reso
   }
 
   const card = await res.json();
-  return { status: 'found', card: normalize(card) };
+  return { status: 'found', card: normalizeScryfallCard(card) };
 }
 
 export function sleep(ms: number): Promise<void> {
