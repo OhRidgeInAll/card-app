@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { upsertCard } from '@/lib/cards';
 import { parseBulkList } from '@/lib/bulk-import';
-import { resolveCardByName, sleep } from '@/lib/scryfall';
+import { resolveCardByName, sleep, SCRYFALL_REQUEST_DELAY_MS } from '@/lib/scryfall';
 
 type Destination = 'collection' | 'deck' | 'both';
 
@@ -58,18 +58,29 @@ export async function POST(request: NextRequest) {
   );
 
   const matched: Array<{ name: string; quantity: number }> = [];
-  const unmatched: string[] = [];
+  const notFound: string[] = [];
+  const failed: string[] = [];
 
   // Sequential on purpose - a precon-sized list is 60-100 lines, and hitting
   // Scryfall's fuzzy-name endpoint that many times at once isn't polite.
   for (const entry of entries) {
-    const resolved = await resolveCardByName(entry.name);
+    const outcome = await resolveCardByName(entry.name);
 
-    if (!resolved) {
-      unmatched.push(entry.raw);
-      await sleep(75);
+    if (outcome.status === 'not_found') {
+      notFound.push(entry.raw);
+      await sleep(SCRYFALL_REQUEST_DELAY_MS);
       continue;
     }
+
+    if (outcome.status === 'error') {
+      // I'm so used to small little prototype projects I forgot my courtesy to Scryfall. Let's not hammer their API if we can avoid it.
+      // We were being rate limited but initially were interpreting the error as a "not found" and retying immediately, which is a bad idea. Let's back off and try again later.
+      failed.push(entry.raw);
+      await sleep(SCRYFALL_REQUEST_DELAY_MS);
+      continue;
+    }
+
+    const resolved = outcome.card;
 
     const cardId = upsertCard(db, {
       game: 'mtg',
@@ -89,13 +100,14 @@ export async function POST(request: NextRequest) {
     }
 
     matched.push({ name: resolved.name, quantity: entry.quantity });
-    await sleep(75);
+    await sleep(SCRYFALL_REQUEST_DELAY_MS);
   }
 
   return NextResponse.json({
     ok: true,
     deck_id: resolvedDeckId,
     matched_count: matched.length,
-    unmatched,
+    not_found: notFound,
+    failed,
   });
 }

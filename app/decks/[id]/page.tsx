@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
 import { getDeckCardsWithAllocation } from '@/lib/decks';
-import DeckCardControls from './DeckCardControls';
+import { getAllTags, getTagsForDecks } from '@/lib/tags';
+import DeckCardsView from './DeckCardsView';
+import TagEditor from '@/app/TagEditor';
 
 interface Props {
   params: { id: string };
@@ -20,9 +22,11 @@ export default function DeckDetailPage({ params }: Props) {
 
   const cards = getDeckCardsWithAllocation(deckId);
   const totalMissing = cards.reduce((sum, c) => sum + c.missing, 0);
+  const deckTags = getTagsForDecks([deckId]).get(deckId) ?? [];
+  const allTags = getAllTags().map((tag) => tag.label);
 
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1rem' }}>
+    <main style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 1rem' }}>
       <div
         style={{
           display: 'flex',
@@ -42,6 +46,10 @@ export default function DeckDetailPage({ params }: Props) {
         </div>
       </div>
 
+      <div style={{ marginBottom: '0.75rem' }}>
+        <TagEditor kind="deck" entityId={deck!.id} tags={deckTags} allTags={allTags} />
+      </div>
+
       <p
         style={{
           color: totalMissing > 0 ? '#b3261e' : '#2e7d32',
@@ -54,47 +62,7 @@ export default function DeckDetailPage({ params }: Props) {
           : 'Fully assembled from your collection'}
       </p>
 
-      {cards.length === 0 ? (
-        <p style={{ color: '#666' }}>No cards yet. Add your first one.</p>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid #ddd' }}>
-              <th style={{ padding: '0.5rem' }}></th>
-              <th style={{ padding: '0.5rem' }}>Name</th>
-              <th style={{ padding: '0.5rem' }}>Set</th>
-              <th style={{ padding: '0.5rem' }}>Needed</th>
-              <th style={{ padding: '0.5rem' }}>Owned (total)</th>
-              <th style={{ padding: '0.5rem' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cards.map((card) => (
-              <tr key={card.card_id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.5rem' }}>
-                  {card.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={card.image_url} alt={card.name} width={32} style={{ borderRadius: 4 }} />
-                  ) : null}
-                </td>
-                <td style={{ padding: '0.5rem' }}>{card.name}</td>
-                <td style={{ padding: '0.5rem' }}>{card.set_code?.toUpperCase() ?? '—'}</td>
-                <td style={{ padding: '0.5rem' }}>
-                  <DeckCardControls deckId={deck!.id} cardId={card.card_id} quantity={card.quantity_needed} />
-                </td>
-                <td style={{ padding: '0.5rem' }}>{card.total_owned}</td>
-                <td style={{ padding: '0.5rem' }}>
-                  {card.missing > 0 ? (
-                    <span style={{ color: '#b3261e' }}>Missing {card.missing}</span>
-                  ) : (
-                    <span style={{ color: '#2e7d32' }}>Have {card.allocated}</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <DeckCardsView deckId={deck!.id} cards={cards} allTags={allTags} />
     </main>
   );
 }
