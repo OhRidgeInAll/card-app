@@ -1,4 +1,5 @@
 import { db } from './db';
+import { getTagsForCards, type Tag } from './tags';
 
 export interface DeckCardAllocation {
   card_id: number;
@@ -9,6 +10,7 @@ export interface DeckCardAllocation {
   total_owned: number;
   allocated: number;
   missing: number;
+  tags: Tag[];
 }
 
 interface DeckCardRow {
@@ -56,6 +58,8 @@ export function getDeckCardsWithAllocation(deckId: number): DeckCardAllocation[]
     )
     .all(deckId, deckId) as DeckCardRow[];
 
+  const tagsByCard = getTagsForCards(rows.map((row) => row.card_id));
+
   return rows.map((row) => {
     const availableForThisDeck = Math.max(0, row.total_owned - row.needed_by_earlier_decks);
     const allocated = Math.min(row.quantity_needed, availableForThisDeck);
@@ -70,6 +74,7 @@ export function getDeckCardsWithAllocation(deckId: number): DeckCardAllocation[]
       total_owned: row.total_owned,
       allocated,
       missing,
+      tags: tagsByCard.get(row.card_id) ?? [],
     };
   });
 }

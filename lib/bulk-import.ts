@@ -15,6 +15,8 @@ const SECTION_HEADERS = new Set(['deck', 'sideboard', 'commander', 'companion', 
  *   "4 Lightning Bolt"
  *   "4 Lightning Bolt (M10) 146"   - trailing set/collector info is stripped
  *   "4, Lightning Bolt"            - simple CSV-style
+ *   "1 Namor, Atlantean King"      - commas that are part of the card's own
+ *                                    name are preserved, not mistaken for CSV
  * Blank lines, comments ("//" or "#"), and section headers are skipped.
  */
 export function parseBulkList(text: string): ParsedBulkLine[] {
@@ -27,10 +29,11 @@ export function parseBulkList(text: string): ParsedBulkLine[] {
     if (!line || line.startsWith('//') || line.startsWith('#')) continue;
     if (SECTION_HEADERS.has(line.toLowerCase().replace(/:$/, ''))) continue;
 
-    if (line.includes(',')) {
-      const [qtyPart, ...rest] = line.split(',');
-      const qty = parseInt(qtyPart.trim(), 10);
-      const namePart = rest.join(',').trim().replace(/^["']|["']$/g, '');
+    //Somewhat hacky but we only interpret CSV style when Commma follows a number, Let's hope they don't make a card called 1, 2, Shoot!
+    const csvMatch = line.match(/^(\d+)\s*,\s*(.+)$/);
+    if (csvMatch) {
+      const qty = parseInt(csvMatch[1], 10);
+      const namePart = csvMatch[2].trim().replace(/^["']|["']$/g, '');
 
       if (Number.isFinite(qty) && qty > 0 && namePart) {
         parsed.push({ raw: line, quantity: qty, name: namePart });

@@ -14,7 +14,8 @@ type Destination = 'collection' | 'deck' | 'both';
 interface ImportResult {
   deck_id?: number;
   matched_count: number;
-  unmatched: string[];
+  not_found: string[];
+  failed: string[];
 }
 
 export default function ImportPage() {
@@ -243,14 +244,27 @@ export default function ImportPage() {
               </Link>
             </p>
           )}
-          {result.unmatched.length > 0 && (
+          {result.failed.length > 0 && (
             <div style={{ marginTop: '0.75rem' }}>
               <p style={{ color: '#b3261e', fontSize: '0.9rem' }}>
-                Couldn&apos;t find a match for {result.unmatched.length} line
-                {result.unmatched.length === 1 ? '' : 's'} — add these manually:
+                {result.failed.length} line{result.failed.length === 1 ? '' : 's'} kept failing to
+                reach Scryfall (likely a brief rate limit) — try pasting just these again:
               </p>
               <ul style={{ fontSize: '0.85rem', color: '#666' }}>
-                {result.unmatched.map((line) => (
+                {result.failed.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {result.not_found.length > 0 && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <p style={{ color: '#b3261e', fontSize: '0.9rem' }}>
+                Couldn&apos;t find a match for {result.not_found.length} line
+                {result.not_found.length === 1 ? '' : 's'} — add these manually:
+              </p>
+              <ul style={{ fontSize: '0.85rem', color: '#666' }}>
+                {result.not_found.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
               </ul>
