@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { db } from '@/lib/db';
 import type { CollectionRow } from '@/types/card';
 import { getAllTags, getTagsForCards } from '@/lib/tags';
+import { getCacheMeta } from '@/lib/scryfall-cache';
 import CollectionView from './CollectionView';
+import RefreshCacheButton from './RefreshCacheButton';
 
 export default function CollectionPage() {
   const rows = db
@@ -18,6 +20,7 @@ export default function CollectionPage() {
   const tagsByCard = getTagsForCards(rows.map((row) => row.card_id));
   const items = rows.map((row) => ({ ...row, tags: tagsByCard.get(row.card_id) ?? [] }));
   const allTags = getAllTags().map((tag) => tag.label);
+  const cacheMeta = getCacheMeta();
 
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 1rem' }}>
@@ -41,6 +44,10 @@ export default function CollectionPage() {
             + Add cards
           </Link>
         </div>
+      </div>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <RefreshCacheButton meta={cacheMeta} />
       </div>
 
       <CollectionView items={items} allTags={allTags} />

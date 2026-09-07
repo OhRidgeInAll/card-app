@@ -55,3 +55,32 @@ CREATE TABLE IF NOT EXISTS deck_tags (
   tag_id INTEGER NOT NULL REFERENCES tags (id),
   PRIMARY KEY (deck_id, tag_id)
 );
+
+-- Local mirror of Scryfall's "Oracle Cards" bulk-data file (one row per unique
+-- card), refreshed on demand so lookups can resolve locally instead of
+-- hitting Scryfall's live API for every search/import. See lib/scryfall-cache.ts.
+CREATE TABLE IF NOT EXISTS scryfall_cache (
+  id TEXT PRIMARY KEY,             -- Scryfall card id, matches cards.external_id
+  oracle_id TEXT,
+  name TEXT NOT NULL,
+  normalized_name TEXT NOT NULL,
+  set_code TEXT,
+  image_url TEXT,
+  attributes TEXT NOT NULL,        -- JSON string, same shape as ScryfallResolvedCard['attributes']
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_scryfall_cache_normalized_name ON scryfall_cache (normalized_name);
+
+-- Single-row (id is always 1) record of the last refresh attempt, so the UI
+-- can show "last refreshed" and surface failures without losing the
+-- previously-good cache - a failed refresh never touches scryfall_cache.
+CREATE TABLE IF NOT EXISTS scryfall_cache_meta (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  last_refreshed_at TEXT,
+  source_updated_at TEXT,          -- Scryfall's bulk-data manifest updated_at
+  rows_loaded INTEGER,
+  row_errors INTEGER,
+  status TEXT,                     -- 'ok' | 'error'
+  error_message TEXT
+);
