@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import type { CollectionRow } from '@/types/card';
 import { gameLabel } from '@/lib/games';
 import QuantityControls from './QuantityControls';
+import PrintPicker from './PrintPicker';
 import TagEditor from './TagEditor';
 
 interface Tag {
@@ -10,17 +12,7 @@ interface Tag {
   label: string;
 }
 
-interface CollectionItem {
-  id: number;
-  card_id: number;
-  name: string;
-  game: string;
-  set_code: string | null;
-  image_url: string | null;
-  quantity_owned: number;
-  condition: string;
-  tags: Tag[];
-}
+type CollectionItem = CollectionRow & { tags: Tag[] };
 
 interface Props {
   items: CollectionItem[];
@@ -118,25 +110,32 @@ export default function CollectionView({ items, allTags }: Props) {
             </tr>
           </thead>
           <tbody>
-            {filteredItems.map((item) => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.5rem' }}>
-                  {item.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.image_url} alt={item.name} width={32} style={{ borderRadius: 4 }} />
-                  ) : null}
-                </td>
-                <td style={{ padding: '0.5rem' }}>{item.name}</td>
-                <td style={{ padding: '0.5rem' }}>{item.set_code ?? '—'}</td>
-                <td style={{ padding: '0.5rem' }}>{item.condition}</td>
-                <td style={{ padding: '0.5rem' }}>
-                  <QuantityControls itemId={item.id} quantity={item.quantity_owned} />
-                </td>
-                <td style={{ padding: '0.5rem', minWidth: 180 }}>
-                  <TagEditor kind="card" entityId={item.card_id} tags={item.tags} allTags={allTags} />
-                </td>
-              </tr>
-            ))}
+            {filteredItems.map((item) => {
+              const displayImage = item.printing_image_url ?? item.image_url;
+              const displaySet = item.printing_set_code ?? item.set_code;
+              return (
+                <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '0.5rem' }}>
+                    {displayImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={displayImage} alt={item.name} width={32} style={{ borderRadius: 4 }} />
+                    ) : null}
+                  </td>
+                  <td style={{ padding: '0.5rem' }}>{item.name}</td>
+                  <td style={{ padding: '0.5rem' }}>{displaySet ?? '—'}</td>
+                  <td style={{ padding: '0.5rem' }}>{item.condition}</td>
+                  <td style={{ padding: '0.5rem' }}>
+                    <QuantityControls itemId={item.id} quantity={item.quantity_owned} />
+                    {item.game === 'mtg' && (
+                      <PrintPicker itemId={item.id} cardName={item.name} quantityOwned={item.quantity_owned} />
+                    )}
+                  </td>
+                  <td style={{ padding: '0.5rem', minWidth: 180 }}>
+                    <TagEditor kind="card" entityId={item.card_id} tags={item.tags} allTags={allTags} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       ) : (

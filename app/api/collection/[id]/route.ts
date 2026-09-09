@@ -12,6 +12,37 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   const body = await request.json();
+
+  if (body && typeof body === 'object' && 'printing' in body) {
+    const printing = body.printing;
+    if (!printing || typeof printing.external_id !== 'string' || typeof printing.set_code !== 'string') {
+      return NextResponse.json({ error: 'printing.external_id and printing.set_code are required' }, { status: 400 });
+    }
+
+    const result = db
+      .prepare(
+        `UPDATE collection_items
+         SET printing_external_id = @external_id,
+             printing_set_code = @set_code,
+             printing_image_url = @image_url,
+             printing_attributes = @attributes
+         WHERE id = @id`
+      )
+      .run({
+        id,
+        external_id: printing.external_id,
+        set_code: printing.set_code,
+        image_url: printing.image_url ?? null,
+        attributes: printing.attributes ? JSON.stringify(printing.attributes) : null,
+      });
+
+    if (result.changes === 0) {
+      return NextResponse.json({ error: 'Collection item not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true, printing });
+  }
+
   const delta = Number(body?.delta);
 
   if (!Number.isFinite(delta) || delta === 0) {

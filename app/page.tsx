@@ -14,7 +14,8 @@ export default function CollectionPage() {
   const rows = db
     .prepare(
       `SELECT ci.id, ci.card_id, c.name, c.game, c.set_code, c.image_url,
-              ci.quantity_owned, ci.condition
+              ci.quantity_owned, ci.condition,
+              ci.printing_external_id, ci.printing_set_code, ci.printing_image_url, ci.printing_attributes
        FROM collection_items ci
        JOIN cards c ON c.id = ci.card_id
        ORDER BY c.name ASC`

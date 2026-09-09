@@ -13,6 +13,12 @@ export interface CollectionRow {
   game: Game;
   set_code: string | null;
   image_url: string | null;
+  // Which specific printing this row's copies are (MTG only, set via bulk
+  // import or the print picker)
+  printing_external_id: string | null;
+  printing_set_code: string | null;
+  printing_image_url: string | null;
+  printing_attributes: string | null;
 }
 
 export interface ScryfallSearchResult {

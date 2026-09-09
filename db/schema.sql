@@ -13,12 +13,18 @@ CREATE TABLE IF NOT EXISTS cards (
 );
 
 -- How many physical copies you own. Split by condition so "3 NM + 1 LP" of the
--- same card are tracked separately.
+-- same card are tracked separately. The printing_* columns are an annotation, they
+-- record which printing this row's copies are (MTG only, set via
+-- bulk import or the print picker)
 CREATE TABLE IF NOT EXISTS collection_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   card_id INTEGER NOT NULL REFERENCES cards (id),
   quantity_owned INTEGER NOT NULL DEFAULT 0,
   condition TEXT NOT NULL DEFAULT 'NM',
+  printing_external_id TEXT,
+  printing_set_code TEXT,
+  printing_image_url TEXT,
+  printing_attributes TEXT,
   UNIQUE (card_id, condition)
 );
 
@@ -28,8 +34,7 @@ CREATE TABLE IF NOT EXISTS decks (
   game TEXT NOT NULL
 );
 
--- How many copies a deck *wants*. Deliberately has no "allocated" or "missing"
--- column - those are computed at query time from collection_items so they can
+-- How many copies a deck *wants*. computes if fulfilled at query time from collection_items so they can
 -- never drift out of sync when a card gets pulled into a different deck.
 CREATE TABLE IF NOT EXISTS deck_cards (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,9 +61,7 @@ CREATE TABLE IF NOT EXISTS deck_tags (
   PRIMARY KEY (deck_id, tag_id)
 );
 
--- Local mirror of Scryfall's "Oracle Cards" bulk-data file (one row per unique
--- card), refreshed on demand so lookups can resolve locally instead of
--- hitting Scryfall's live API for every search/import. See lib/scryfall-cache.ts.
+-- Local mirror of Scryfall's "Oracle Cards" bulk-data file (one row per unique card)
 CREATE TABLE IF NOT EXISTS scryfall_cache (
   id TEXT PRIMARY KEY,             -- Scryfall card id, matches cards.external_id
   oracle_id TEXT,
@@ -86,8 +89,7 @@ CREATE TABLE IF NOT EXISTS scryfall_cache_meta (
 );
 
 -- Local mirror of YGOPRODeck's full card database (cardinfo.php with no query
--- params returns every card in one JSON response - no bulk-file manifest/gzip
--- step needed, unlike Scryfall). See lib/ygoprodeck-cache.ts.
+-- params returns every card in one JSON response). See lib/ygoprodeck-cache.ts.
 CREATE TABLE IF NOT EXISTS ygoprodeck_cache (
   id TEXT PRIMARY KEY,             -- YGOPRODeck's numeric card id (as text), matches cards.external_id
   name TEXT NOT NULL,

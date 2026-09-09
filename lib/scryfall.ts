@@ -84,6 +84,62 @@ export async function resolveCardByName(name: string, attempt = 1): Promise<Reso
   return { status: 'found', card: normalizeScryfallCard(card) };
 }
 
+/**
+ * Resolves one exact printing by set code + collector number (e.g. "m10",
+ * "146") - used when a decklist line names a specific printing, unlike
+ * resolveCardByName's fuzzy name-only match. Same retry/backoff shape.
+ */
+export async function resolveExactPrinting(setCode: string, collectorNumber: string, attempt = 1): Promise<ResolveOutcome> {
+  const url = `https://api.scryfall.com/cards/${encodeURIComponent(setCode)}/${encodeURIComponent(collectorNumber)}`;
+  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+
+  if (res.status === 404) {
+    return { status: 'not_found' };
+  }
+
+  if (!res.ok) {
+    if (attempt >= MAX_ATTEMPTS) {
+      return { status: 'error' };
+    }
+    const retryAfterHeader = res.headers.get('retry-after');
+    const backoffMs = retryAfterHeader ? Number(retryAfterHeader) * 1000 : 500 * attempt;
+    await sleep(backoffMs);
+    return resolveExactPrinting(setCode, collectorNumber, attempt + 1);
+  }
+
+  const card = await res.json();
+  return { status: 'found', card: normalizeScryfallCard(card) };
+}
+
+export interface PrintingSearchResult {
+  printings: ScryfallResolvedCard[];
+  has_more: boolean;
+  total_cards: number;
+}
+
+/**
+ * Lists every printing of a card by exact name, for the print-picker UI.
+ * Only the first page (Scryfall's default, up to 175) is fetched - fine for
+ * nearly every card, but basic lands have 1000+ printings and will report
+ * has_more:true rather than being silently truncated.
+ */
+export async function searchPrintings(name: string): Promise<PrintingSearchResult> {
+  const url = `https://api.scryfall.com/cards/search?q=${encodeURIComponent(`!"${name}"`)}&unique=prints&order=released`;
+  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+
+  if (!res.ok) {
+    if (res.status === 404) return { printings: [], has_more: false, total_cards: 0 };
+    throw new Error('Scryfall printing search failed');
+  }
+
+  const data = await res.json();
+  return {
+    printings: (data.data ?? []).map(normalizeScryfallCard),
+    has_more: Boolean(data.has_more),
+    total_cards: Number(data.total_cards ?? data.data?.length ?? 0),
+  };
+}
+
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

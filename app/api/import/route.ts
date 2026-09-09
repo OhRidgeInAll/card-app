@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { upsertCard } from '@/lib/cards';
 import { parseBulkList } from '@/lib/bulk-import';
-import { sleep, SCRYFALL_REQUEST_DELAY_MS } from '@/lib/scryfall';
+import { sleep, SCRYFALL_REQUEST_DELAY_MS, resolveExactPrinting, type ScryfallResolvedCard } from '@/lib/scryfall';
 import { cacheResolveByName } from '@/lib/scryfall-cache';
 import { YGOPRODECK_REQUEST_DELAY_MS } from '@/lib/ygoprodeck';
 import { ygoResolveByName, ensureLocalYgoImage } from '@/lib/ygoprodeck-cache';
@@ -51,10 +51,20 @@ export async function POST(request: NextRequest) {
   }
 
   const upsertCollectionItem = db.prepare(
-    `INSERT INTO collection_items (card_id, quantity_owned, condition)
-     VALUES (@card_id, @quantity, 'NM')
+    `INSERT INTO collection_items (
+       card_id, quantity_owned, condition,
+       printing_external_id, printing_set_code, printing_image_url, printing_attributes
+     )
+     VALUES (
+       @card_id, @quantity, 'NM',
+       @printing_external_id, @printing_set_code, @printing_image_url, @printing_attributes
+     )
      ON CONFLICT (card_id, condition) DO UPDATE SET
-       quantity_owned = quantity_owned + excluded.quantity_owned`
+       quantity_owned = quantity_owned + excluded.quantity_owned,
+       printing_external_id = COALESCE(excluded.printing_external_id, printing_external_id),
+       printing_set_code = COALESCE(excluded.printing_set_code, printing_set_code),
+       printing_image_url = COALESCE(excluded.printing_image_url, printing_image_url),
+       printing_attributes = COALESCE(excluded.printing_attributes, printing_attributes)`
   );
 
   const upsertDeckCard = db.prepare(
@@ -107,8 +117,28 @@ export async function POST(request: NextRequest) {
       attributes: resolved.attributes,
     });
 
+    // A line naming an exact printing (e.g. "(M10) 146") gets that printing
+    // looked up live and recorded on the collection row - purely additional
+    // metadata, never changes cardId/deck-matching above. Always a live call
+    // (no local cache of every printing), so it's always followed by a sleep.
+    let printing: ScryfallResolvedCard | null = null;
+    if (resolvedGame === 'mtg' && entry.set_code && entry.collector_number) {
+      const printingOutcome = await resolveExactPrinting(entry.set_code, entry.collector_number);
+      if (printingOutcome.status === 'found') {
+        printing = printingOutcome.card;
+      }
+      await sleep(SCRYFALL_REQUEST_DELAY_MS);
+    }
+
     if (destination === 'collection' || destination === 'both') {
-      upsertCollectionItem.run({ card_id: cardId, quantity: entry.quantity });
+      upsertCollectionItem.run({
+        card_id: cardId,
+        quantity: entry.quantity,
+        printing_external_id: printing?.external_id ?? null,
+        printing_set_code: printing?.set_code ?? null,
+        printing_image_url: printing?.image_url ?? null,
+        printing_attributes: printing ? JSON.stringify(printing.attributes) : null,
+      });
     }
 
     if ((destination === 'deck' || destination === 'both') && resolvedDeckId) {
