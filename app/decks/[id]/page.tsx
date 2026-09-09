@@ -7,6 +7,8 @@ import { gameLabel } from '@/lib/games';
 import DeckCardsView from './DeckCardsView';
 import TagEditor from '@/app/TagEditor';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: { id: string };
 }

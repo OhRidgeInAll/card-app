@@ -8,6 +8,8 @@ import CollectionView from './CollectionView';
 import RefreshCacheButton from './RefreshCacheButton';
 import RefreshYgoCacheButton from './RefreshYgoCacheButton';
 
+export const dynamic = 'force-dynamic';
+
 export default function CollectionPage() {
   const rows = db
     .prepare(

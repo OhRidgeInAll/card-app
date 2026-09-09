@@ -39,6 +39,19 @@ function toggleStyle(active: boolean): React.CSSProperties {
   };
 }
 
+function tabStyle(active: boolean): React.CSSProperties {
+  return {
+    padding: '0.35rem 0.9rem',
+    borderRadius: 6,
+    border: '1px solid #333',
+    background: active ? '#1a1a1a' : '#fff',
+    color: active ? '#fff' : '#333',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    fontWeight: active ? 600 : 400,
+  };
+}
+
 function groupByTag<T extends { tags: Tag[] }>(items: T[]): Map<string, T[]> {
   const columns = new Map<string, T[]>();
   for (const item of items) {
@@ -61,33 +74,43 @@ function sortColumnNames(names: string[]): string[] {
 }
 
 export default function CollectionView({ items, allTags }: Props) {
+  const [game, setGame] = useState<'mtg' | 'yugioh'>('mtg');
   const [view, setView] = useState<'table' | 'board'>('table');
 
-  if (items.length === 0) {
-    return <p style={{ color: '#666' }}>No cards yet. Add your first one.</p>;
-  }
-
-  const columns = groupByTag(items);
+  const filteredItems = items.filter((item) => item.game === game);
+  const columns = groupByTag(filteredItems);
   const columnNames = sortColumnNames(Array.from(columns.keys()));
 
   return (
     <div>
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-        <button onClick={() => setView('table')} style={toggleStyle(view === 'table')}>
-          Table
+        <button onClick={() => setGame('mtg')} style={tabStyle(game === 'mtg')}>
+          Magic: The Gathering
         </button>
-        <button onClick={() => setView('board')} style={toggleStyle(view === 'board')}>
-          Board (by tag)
+        <button onClick={() => setGame('yugioh')} style={tabStyle(game === 'yugioh')}>
+          Yu-Gi-Oh!
         </button>
       </div>
 
-      {view === 'table' ? (
+      {filteredItems.length === 0 ? (
+        <p style={{ color: '#666' }}>No {gameLabel(game)} cards yet. Add your first one.</p>
+      ) : (
+        <>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <button onClick={() => setView('table')} style={toggleStyle(view === 'table')}>
+              Table
+            </button>
+            <button onClick={() => setView('board')} style={toggleStyle(view === 'board')}>
+              Board (by tag)
+            </button>
+          </div>
+
+          {view === 'table' ? (
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ textAlign: 'left', borderBottom: '1px solid #ddd' }}>
               <th style={{ padding: '0.5rem' }}></th>
               <th style={{ padding: '0.5rem' }}>Name</th>
-              <th style={{ padding: '0.5rem' }}>Game</th>
               <th style={{ padding: '0.5rem' }}>Set</th>
               <th style={{ padding: '0.5rem' }}>Condition</th>
               <th style={{ padding: '0.5rem' }}>Qty</th>
@@ -95,7 +118,7 @@ export default function CollectionView({ items, allTags }: Props) {
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
+            {filteredItems.map((item) => (
               <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
                 <td style={{ padding: '0.5rem' }}>
                   {item.image_url ? (
@@ -104,7 +127,6 @@ export default function CollectionView({ items, allTags }: Props) {
                   ) : null}
                 </td>
                 <td style={{ padding: '0.5rem' }}>{item.name}</td>
-                <td style={{ padding: '0.5rem' }}>{gameLabel(item.game)}</td>
                 <td style={{ padding: '0.5rem' }}>{item.set_code ?? '—'}</td>
                 <td style={{ padding: '0.5rem' }}>{item.condition}</td>
                 <td style={{ padding: '0.5rem' }}>
@@ -160,6 +182,8 @@ export default function CollectionView({ items, allTags }: Props) {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );

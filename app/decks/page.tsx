@@ -4,6 +4,8 @@ import { getTagsForDecks } from '@/lib/tags';
 import { gameLabel } from '@/lib/games';
 import NewDeckForm from './NewDeckForm';
 
+export const dynamic = 'force-dynamic';
+
 interface DeckRow {
   id: number;
   name: string;

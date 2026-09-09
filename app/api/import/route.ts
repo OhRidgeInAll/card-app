@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     if (outcome.status === 'error') {
       // I'm so used to small little prototype projects I forgot my courtesy to Scryfall. Let's not hammer their API if we can avoid it.
-      // We were being rate limited but initially were interpreting the error as a "not found" and retying immediately, which is a bad idea. Let's back off and try again later.
+      // We were being rate limited but initially were interpreting the error as a "not found" and retrying immediately.
       failed.push(entry.raw);
       if (outcome.source === 'live') await sleep(requestDelayMs);
       continue;

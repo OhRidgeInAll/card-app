@@ -32,7 +32,7 @@ export function parseBulkList(text: string): ParsedBulkLine[] {
     if (!line || line.startsWith('//') || line.startsWith('#')) continue;
     if (SECTION_HEADERS.has(line.toLowerCase().replace(/:$/, ''))) continue;
 
-    //Somewhat hacky but we only interpret CSV style when Commma follows a number, Let's hope they don't make a card called 1, 2, Shoot!
+    //Somewhat hacky but we only interpret CSV style when Comma follows a number, Let's hope they don't make a card called 1, 2, Shoot!
     const csvMatch = line.match(/^(\d+)\s*,\s*(.+)$/);
     if (csvMatch) {
       const qty = parseInt(csvMatch[1], 10);
