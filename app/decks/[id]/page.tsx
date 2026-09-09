@@ -3,8 +3,11 @@ import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
 import { getDeckCardsWithAllocation } from '@/lib/decks';
 import { getAllTags, getTagsForDecks } from '@/lib/tags';
+import { gameLabel } from '@/lib/games';
 import DeckCardsView from './DeckCardsView';
 import TagEditor from '@/app/TagEditor';
+
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: { id: string };
@@ -37,7 +40,10 @@ export default function DeckDetailPage({ params }: Props) {
       >
         <h1 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{deck!.name}</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link href={`/decks/${deck!.id}/add`} style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
+          <Link
+            href={deck!.game === 'yugioh' ? `/decks/${deck!.id}/add-ygo` : `/decks/${deck!.id}/add`}
+            style={{ fontSize: '0.9rem', textDecoration: 'underline' }}
+          >
             + Add cards
           </Link>
           <Link href="/decks" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
@@ -45,6 +51,8 @@ export default function DeckDetailPage({ params }: Props) {
           </Link>
         </div>
       </div>
+
+      <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{gameLabel(deck!.game)}</p>
 
       <div style={{ marginBottom: '0.75rem' }}>
         <TagEditor kind="deck" entityId={deck!.id} tags={deckTags} allTags={allTags} />

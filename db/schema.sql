@@ -84,3 +84,30 @@ CREATE TABLE IF NOT EXISTS scryfall_cache_meta (
   status TEXT,                     -- 'ok' | 'error'
   error_message TEXT
 );
+
+-- Local mirror of YGOPRODeck's full card database (cardinfo.php with no query
+-- params returns every card in one JSON response - no bulk-file manifest/gzip
+-- step needed, unlike Scryfall). See lib/ygoprodeck-cache.ts.
+CREATE TABLE IF NOT EXISTS ygoprodeck_cache (
+  id TEXT PRIMARY KEY,             -- YGOPRODeck's numeric card id (as text), matches cards.external_id
+  name TEXT NOT NULL,
+  normalized_name TEXT NOT NULL,
+  set_code TEXT,                   -- first card_sets[] entry only - not a unique identifier, cosmetic
+  image_url TEXT,                  -- remote YGOPRODeck CDN URL; never a local path in this table
+  attributes TEXT NOT NULL,        -- JSON string, same shape as YgoResolvedCard['attributes']
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ygoprodeck_cache_normalized_name ON ygoprodeck_cache (normalized_name);
+
+-- Single-row (id is always 1) record of the last refresh attempt, mirrors
+-- scryfall_cache_meta's purpose.
+CREATE TABLE IF NOT EXISTS ygoprodeck_cache_meta (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  last_refreshed_at TEXT,
+  source_updated_at TEXT,          -- YGOPRODeck has no dataset-level timestamp; set equal to last_refreshed_at
+  rows_loaded INTEGER,
+  row_errors INTEGER,
+  status TEXT,                     -- 'ok' | 'error'
+  error_message TEXT
+);

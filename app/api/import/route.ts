@@ -4,17 +4,23 @@ import { upsertCard } from '@/lib/cards';
 import { parseBulkList } from '@/lib/bulk-import';
 import { sleep, SCRYFALL_REQUEST_DELAY_MS } from '@/lib/scryfall';
 import { cacheResolveByName } from '@/lib/scryfall-cache';
+import { YGOPRODECK_REQUEST_DELAY_MS } from '@/lib/ygoprodeck';
+import { ygoResolveByName, ensureLocalYgoImage } from '@/lib/ygoprodeck-cache';
+import type { Game } from '@/types/card';
 
 type Destination = 'collection' | 'deck' | 'both';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { text, destination, deck_id, new_deck_name } = body as {
+  const { text, destination, deck_id, new_deck_name, game } = body as {
     text?: string;
     destination?: Destination;
     deck_id?: number;
     new_deck_name?: string;
+    game?: Game;
   };
+
+  const resolvedGame: Game = game ?? 'mtg';
 
   if (!text || !text.trim()) {
     return NextResponse.json({ error: 'text is required' }, { status: 400 });
@@ -34,7 +40,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const created = db.prepare(`INSERT INTO decks (name, game) VALUES (?, 'mtg')`).run(new_deck_name.trim());
+    const created = db.prepare(`INSERT INTO decks (name, game) VALUES (?, ?)`).run(new_deck_name.trim(), resolvedGame);
     resolvedDeckId = Number(created.lastInsertRowid);
   }
 
@@ -62,33 +68,42 @@ export async function POST(request: NextRequest) {
   const notFound: string[] = [];
   const failed: string[] = [];
 
+  const requestDelayMs = resolvedGame === 'yugioh' ? YGOPRODECK_REQUEST_DELAY_MS : SCRYFALL_REQUEST_DELAY_MS;
+
   // Sequential on purpose - a precon-sized list is 60-100 lines, and hitting
-  // Scryfall's fuzzy-name endpoint that many times at once isn't polite.
+  // a live fuzzy-name endpoint that many times at once isn't polite.
   for (const entry of entries) {
-    const outcome = await cacheResolveByName(entry.name);
+    const outcome = resolvedGame === 'yugioh' ? await ygoResolveByName(entry.name) : await cacheResolveByName(entry.name);
 
     if (outcome.status === 'not_found') {
       notFound.push(entry.raw);
-      if (outcome.source === 'live') await sleep(SCRYFALL_REQUEST_DELAY_MS);
+      if (outcome.source === 'live') await sleep(requestDelayMs);
       continue;
     }
 
     if (outcome.status === 'error') {
       // I'm so used to small little prototype projects I forgot my courtesy to Scryfall. Let's not hammer their API if we can avoid it.
-      // We were being rate limited but initially were interpreting the error as a "not found" and retying immediately, which is a bad idea. Let's back off and try again later.
+      // We were being rate limited but initially were interpreting the error as a "not found" and retrying immediately.
       failed.push(entry.raw);
-      if (outcome.source === 'live') await sleep(SCRYFALL_REQUEST_DELAY_MS);
+      if (outcome.source === 'live') await sleep(requestDelayMs);
       continue;
     }
 
     const resolved = outcome.card;
 
+    // Yugioh images must be re-hosted locally rather than hotlinked long-term
+    // (YGOPRODeck's terms) - resolve this before upsertCard, which is fine
+    // here since (unlike the collection/deck-cards routes) this loop doesn't
+    // wrap upsertCard in a db.transaction().
+    const imageUrl =
+      resolvedGame === 'yugioh' ? (await ensureLocalYgoImage(resolved.external_id, resolved.image_url)) ?? resolved.image_url : resolved.image_url;
+
     const cardId = upsertCard(db, {
-      game: 'mtg',
+      game: resolvedGame,
       external_id: resolved.external_id,
       name: resolved.name,
       set_code: resolved.set_code,
-      image_url: resolved.image_url,
+      image_url: imageUrl,
       attributes: resolved.attributes,
     });
 
@@ -101,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
 
     matched.push({ name: resolved.name, quantity: entry.quantity });
-    if (outcome.source === 'live') await sleep(SCRYFALL_REQUEST_DELAY_MS);
+    if (outcome.source === 'live') await sleep(requestDelayMs);
   }
 
   return NextResponse.json({
