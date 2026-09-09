@@ -5,8 +5,11 @@ export interface ParsedBulkLine {
 }
 
 // Lines that are section labels, not cards - common in exports from
-// MTGGoldfish, Moxfield, Archidekt, etc.
-const SECTION_HEADERS = new Set(['deck', 'sideboard', 'commander', 'companion', 'maybeboard']);
+// MTGGoldfish, Moxfield, Archidekt, YGOPRODeck's own deck builder, etc.
+const SECTION_HEADERS = new Set([
+  'deck', 'sideboard', 'commander', 'companion', 'maybeboard', // MTG
+  'main deck', 'extra deck', 'side deck', // Yugioh
+]);
 
 /**
  * Turns pasted decklist text into a list of { quantity, name } entries.

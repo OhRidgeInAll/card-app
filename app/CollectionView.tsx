@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { gameLabel } from '@/lib/games';
 import QuantityControls from './QuantityControls';
 import TagEditor from './TagEditor';
 
@@ -103,7 +104,7 @@ export default function CollectionView({ items, allTags }: Props) {
                   ) : null}
                 </td>
                 <td style={{ padding: '0.5rem' }}>{item.name}</td>
-                <td style={{ padding: '0.5rem' }}>{item.game}</td>
+                <td style={{ padding: '0.5rem' }}>{gameLabel(item.game)}</td>
                 <td style={{ padding: '0.5rem' }}>{item.set_code ?? '—'}</td>
                 <td style={{ padding: '0.5rem' }}>{item.condition}</td>
                 <td style={{ padding: '0.5rem' }}>

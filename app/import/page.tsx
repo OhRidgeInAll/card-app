@@ -7,6 +7,7 @@ import Link from 'next/link';
 interface DeckOption {
   id: number;
   name: string;
+  game: string;
 }
 
 type Destination = 'collection' | 'deck' | 'both';
@@ -33,7 +34,7 @@ export default function ImportPage() {
   useEffect(() => {
     fetch('/api/decks')
       .then((res) => res.json())
-      .then((data) => setDecks(data.decks ?? []));
+      .then((data) => setDecks((data.decks ?? []).filter((deck: DeckOption) => deck.game === 'mtg')));
   }, []);
 
   const needsDeck = destination === 'deck' || destination === 'both';

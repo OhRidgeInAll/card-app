@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { getTagsForDecks } from '@/lib/tags';
+import { gameLabel } from '@/lib/games';
 import NewDeckForm from './NewDeckForm';
 
 interface DeckRow {
@@ -38,6 +39,9 @@ export default function DecksPage() {
           <Link href="/import" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
             Bulk import
           </Link>
+          <Link href="/import-ygo" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
+            Bulk import (YGO)
+          </Link>
           <Link href="/" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
             Collection
           </Link>
@@ -61,6 +65,7 @@ export default function DecksPage() {
                       {deck.card_count} card{deck.card_count === 1 ? '' : 's'}
                     </span>
                   </div>
+                  <div style={{ color: '#888', fontSize: '0.8rem' }}>{gameLabel(deck.game)}</div>
                 </Link>
                 {tags.length > 0 && (
                   <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>

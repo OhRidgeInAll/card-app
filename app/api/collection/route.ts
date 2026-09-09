@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { upsertCard } from '@/lib/cards';
+import { ensureLocalYgoImage } from '@/lib/ygoprodeck-cache';
 import type { CollectionRow } from '@/types/card';
 
 export async function GET() {
@@ -28,6 +29,11 @@ export async function POST(request: NextRequest) {
   const qty = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 1;
   const cond = typeof condition === 'string' && condition.length > 0 ? condition : 'NM';
 
+  // Yugioh images must be re-hosted locally rather than hotlinked long-term
+  // (YGOPRODeck's terms) - resolve this before the transaction since
+  // db.transaction() callbacks must be synchronous.
+  const resolvedImageUrl = game === 'yugioh' ? (await ensureLocalYgoImage(external_id, image_url)) ?? image_url : image_url;
+
   const upsertCollectionItem = db.prepare(
     `INSERT INTO collection_items (card_id, quantity_owned, condition)
      VALUES (@card_id, @quantity, @condition)
@@ -36,7 +42,7 @@ export async function POST(request: NextRequest) {
   );
 
   const addToCollection = db.transaction(() => {
-    const cardId = upsertCard(db, { game, external_id, name, set_code, image_url, attributes });
+    const cardId = upsertCard(db, { game, external_id, name, set_code, image_url: resolvedImageUrl, attributes });
 
     upsertCollectionItem.run({
       card_id: cardId,

@@ -38,6 +38,9 @@ export default function RefreshCacheButton({ meta }: Props) {
 
   // The last *successful* refresh's stats - preserved in `meta` even after a
   // later failed attempt, since a failure only ever updates status/error_message.
+  // Rendered below via a plain ISO-date slice, not toLocaleDateString() - that
+  // formats using the server's locale during SSR and the browser's locale
+  // during hydration, which can disagree and throw a hydration mismatch error.
   const lastGoodRefresh = result?.ok
     ? { rows: result.rows_loaded, at: result.last_refreshed_at }
     : meta?.last_refreshed_at
@@ -66,7 +69,7 @@ export default function RefreshCacheButton({ meta }: Props) {
       {!refreshing && (
         <span style={{ color: '#888', fontSize: '0.8rem' }}>
           {lastGoodRefresh
-            ? `(${lastGoodRefresh.rows} cards, last refreshed ${new Date(lastGoodRefresh.at!).toLocaleDateString()})`
+            ? `(${lastGoodRefresh.rows} cards, last refreshed ${lastGoodRefresh.at!.slice(0, 10)})`
             : '(never refreshed - using live lookups)'}
           {failureMessage ? ` — last attempt failed: ${failureMessage}` : ''}
         </span>

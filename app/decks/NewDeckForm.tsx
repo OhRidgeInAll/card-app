@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function NewDeckForm() {
   const [name, setName] = useState('');
+  const [game, setGame] = useState<'mtg' | 'yugioh'>('mtg');
   const [pending, setPending] = useState(false);
   const router = useRouter();
 
@@ -17,7 +18,7 @@ export default function NewDeckForm() {
       const res = await fetch('/api/decks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), game: 'mtg' }),
+        body: JSON.stringify({ name: name.trim(), game }),
       });
       const data = await res.json();
       setName('');
@@ -40,6 +41,14 @@ export default function NewDeckForm() {
         placeholder="New deck name…"
         style={{ flex: 1, padding: '0.5rem 0.75rem', border: '1px solid #ccc', borderRadius: 6 }}
       />
+      <select
+        value={game}
+        onChange={(e) => setGame(e.target.value as 'mtg' | 'yugioh')}
+        style={{ padding: '0.5rem 0.75rem', border: '1px solid #ccc', borderRadius: 6 }}
+      >
+        <option value="mtg">Magic: The Gathering</option>
+        <option value="yugioh">Yu-Gi-Oh!</option>
+      </select>
       <button
         type="submit"
         disabled={pending || !name.trim()}

@@ -3,3 +3,7 @@ node_modules
 data/*.db
 data/*.db-*
 .env*.local
+
+# Downloaded Yugioh card art - copyrighted, re-hosted locally only per
+# YGOPRODeck's terms, never committed. Regenerated on demand as cards are added.
+public/ygo-images/

@@ -22,3 +22,6 @@ export interface ScryfallSearchResult {
   image_url: string | null;
   attributes: CardAttributes;
 }
+
+// Same shape as ScryfallSearchResult, generic name for non-MTG sources (e.g. YGOPRODeck).
+export type CardSearchResult = ScryfallSearchResult;
