@@ -2,7 +2,7 @@
 
 ## What's here
 **Collection**
-- Search Magic: the Gathering cards via Scryfall and add them to your collection
+- Search Magic: the Gathering and Yugioh via Scryfall/YGOProDeck and add them to your collection
 - View and manage collection and qty with simple +/- buttons
 **Decks**
 - Create decks and add cards to them (same Scryfall search UX as the collection)
