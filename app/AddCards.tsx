@@ -67,26 +67,10 @@ export default function AddCards({ game, endpoint, backHref, backLabel, title }:
   }
 
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '2rem 1rem' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{title}</h1>
-        <button
-          onClick={() => router.push(backHref)}
-          style={{
-            fontSize: '0.9rem',
-            textDecoration: 'underline',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
+    <div style={{ maxWidth: 720 }}>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h1 className="h4 fw-semibold mb-0">{title}</h1>
+        <button type="button" onClick={() => router.push(backHref)} className="btn btn-link btn-sm p-0">
           {backLabel}
         </button>
       </div>
@@ -96,55 +80,35 @@ export default function AddCards({ game, endpoint, backHref, backLabel, title }:
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by card name…"
-        style={{
-          width: '100%',
-          padding: '0.6rem 0.75rem',
-          fontSize: '1rem',
-          border: '1px solid #ccc',
-          borderRadius: 6,
-        }}
+        className="form-control"
       />
 
-      {loading && <p style={{ color: '#666', marginTop: '0.75rem' }}>Searching…</p>}
+      {loading && <p className="text-secondary mt-2">Searching…</p>}
 
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
+      <ul className="list-unstyled mt-3">
         {results.map((card) => (
-          <li
-            key={card.external_id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '0.5rem 0',
-              borderBottom: '1px solid #eee',
-            }}
-          >
+          <li key={card.external_id} className="d-flex align-items-center gap-3 py-2 border-bottom">
             {card.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={card.image_url} alt={card.name} width={40} style={{ borderRadius: 4 }} />
+              <img src={card.image_url} alt={card.name} width={40} className="rounded" />
             ) : (
-              <div style={{ width: 40, height: 56, background: '#f0f0f0', borderRadius: 4 }} />
+              <div className="bg-light rounded" style={{ width: 40, height: 56 }} />
             )}
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 500 }}>{card.name}</div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>{subtitle(card)}</div>
+            <div className="flex-grow-1">
+              <div className="fw-medium">{card.name}</div>
+              <div className="small text-secondary">{subtitle(card)}</div>
             </div>
             <button
+              type="button"
               onClick={() => addCard(card)}
               disabled={addingId === card.external_id}
-              style={{
-                padding: '0.4rem 0.8rem',
-                borderRadius: 6,
-                border: '1px solid #333',
-                background: '#fff',
-                cursor: 'pointer',
-              }}
+              className="btn btn-outline-primary btn-sm"
             >
               {addingId === card.external_id ? 'Adding…' : 'Add 1'}
             </button>
           </li>
         ))}
       </ul>
-    </main>
+    </div>
   );
 }

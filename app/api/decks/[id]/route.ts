@@ -3,11 +3,12 @@ import { db } from '@/lib/db';
 import { getDeckCardsWithAllocation } from '@/lib/decks';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
-  const deckId = Number(params.id);
+  const { id: idParam } = await params;
+  const deckId = Number(idParam);
   if (!Number.isFinite(deckId)) {
     return NextResponse.json({ error: 'Invalid deck id' }, { status: 400 });
   }
@@ -24,7 +25,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
-  const deckId = Number(params.id);
+  const { id: idParam } = await params;
+  const deckId = Number(idParam);
   if (!Number.isFinite(deckId)) {
     return NextResponse.json({ error: 'Invalid deck id' }, { status: 400 });
   }

@@ -53,54 +53,29 @@ export default function TagEditor({ kind, entityId, tags, allTags }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem' }}>
+    <div className="d-flex flex-wrap align-items-center gap-1">
       {tags.map((tag) => (
-        <span
-          key={tag.id}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.3rem',
-            padding: '0.15rem 0.5rem',
-            borderRadius: 999,
-            background: '#eef0ff',
-            color: '#33399e',
-            fontSize: '0.75rem',
-          }}
-        >
+        <span key={tag.id} className="badge rounded-pill text-bg-light d-inline-flex align-items-center gap-1">
           {tag.label}
           <button
+            type="button"
             onClick={() => removeTag(tag.id)}
             disabled={pending}
             aria-label={`Remove ${tag.label} tag`}
-            style={{
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-              color: 'inherit',
-              lineHeight: 1,
-              padding: 0,
-              fontSize: '0.9rem',
-            }}
-          >
-            ×
-          </button>
+            className="btn-close btn-close-sm"
+            style={{ fontSize: '0.55rem' }}
+          />
         </span>
       ))}
-      <form onSubmit={addTag} style={{ display: 'inline-flex' }}>
+      <form onSubmit={addTag} className="d-inline-flex">
         <input
           list={datalistId}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="+ tag"
           disabled={pending}
-          style={{
-            fontSize: '0.75rem',
-            padding: '0.15rem 0.5rem',
-            border: '1px dashed #bbb',
-            borderRadius: 999,
-            width: 80,
-          }}
+          className="form-control form-control-sm rounded-pill"
+          style={{ width: 90 }}
         />
         <datalist id={datalistId}>
           {allTags.map((label) => (

@@ -36,38 +36,20 @@ export default function QuantityControls({ itemId, quantity }: Props) {
     }
   }
 
-  const buttonStyle: React.CSSProperties = {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    border: '1px solid #ccc',
-    background: '#fff',
-    cursor: 'pointer',
-    lineHeight: 1,
-  };
-
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-      <button onClick={() => adjust(-1)} disabled={pending} aria-label="Remove one copy" style={buttonStyle}>
-        −
-      </button>
-      <span style={{ minWidth: '1.5rem', textAlign: 'center' }}>{quantity}</span>
-      <button onClick={() => adjust(1)} disabled={pending} aria-label="Add one copy" style={buttonStyle}>
-        +
-      </button>
-      <button
-        onClick={removeAll}
-        disabled={pending}
-        style={{
-          marginLeft: '0.5rem',
-          fontSize: '0.75rem',
-          color: '#999',
-          background: 'none',
-          border: 'none',
-          textDecoration: 'underline',
-          cursor: 'pointer',
-        }}
-      >
+    <div className="d-flex align-items-center gap-2">
+      <div className="btn-group btn-group-sm" role="group">
+        <button type="button" className="btn btn-outline-secondary" onClick={() => adjust(-1)} disabled={pending} aria-label="Remove one copy">
+          −
+        </button>
+        <span className="btn btn-outline-secondary disabled" style={{ minWidth: '2.5rem' }}>
+          {quantity}
+        </span>
+        <button type="button" className="btn btn-outline-secondary" onClick={() => adjust(1)} disabled={pending} aria-label="Add one copy">
+          +
+        </button>
+      </div>
+      <button type="button" onClick={removeAll} disabled={pending} className="btn btn-link btn-sm text-secondary p-0">
         remove
       </button>
     </div>
