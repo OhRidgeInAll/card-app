@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 interface RouteParams {
-  params: { id: string; cardId: string };
+  params: Promise<{ id: string; cardId: string }>;
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const deckId = Number(params.id);
-  const cardId = Number(params.cardId);
+  const { id: idParam, cardId: cardIdParam } = await params;
+  const deckId = Number(idParam);
+  const cardId = Number(cardIdParam);
   if (!Number.isFinite(deckId) || !Number.isFinite(cardId)) {
     return NextResponse.json({ error: 'Invalid deck or card id' }, { status: 400 });
   }
@@ -48,8 +49,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
-  const deckId = Number(params.id);
-  const cardId = Number(params.cardId);
+  const { id: idParam, cardId: cardIdParam } = await params;
+  const deckId = Number(idParam);
+  const cardId = Number(cardIdParam);
   if (!Number.isFinite(deckId) || !Number.isFinite(cardId)) {
     return NextResponse.json({ error: 'Invalid deck or card id' }, { status: 400 });
   }

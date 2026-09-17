@@ -96,36 +96,11 @@ export default function ImportList({ game, title }: Props) {
     }
   }
 
-  const labelStyle: React.CSSProperties = { display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem' };
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '0.5rem 0.7rem',
-    borderRadius: 6,
-    border: '1px solid #ccc',
-  };
-
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '2rem 1rem' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{title}</h1>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link href="/decks" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
-            Decks
-          </Link>
-          <Link href="/" style={{ fontSize: '0.9rem', textDecoration: 'underline' }}>
-            Collection
-          </Link>
-        </div>
-      </div>
+    <div style={{ maxWidth: 720 }}>
+      <h1 className="h4 fw-semibold mb-3">{title}</h1>
 
-      <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1rem' }}>{importIntro}</p>
+      <p className="text-secondary small mb-3">{importIntro}</p>
 
       <form onSubmit={handleSubmit}>
         <textarea
@@ -133,61 +108,71 @@ export default function ImportList({ game, title }: Props) {
           onChange={(e) => setText(e.target.value)}
           rows={12}
           placeholder={importPlaceholder}
-          style={{ ...inputStyle, fontFamily: 'monospace', fontSize: '0.9rem' }}
+          className="form-control font-monospace small"
         />
 
-        <fieldset style={{ border: 'none', padding: 0, marginTop: '1rem' }}>
-          <legend style={{ fontSize: '0.9rem', fontWeight: 500, marginBottom: '0.5rem' }}>
-            Add these cards to:
-          </legend>
-          <label style={labelStyle}>
+        <fieldset className="border-0 p-0 mt-3">
+          <legend className="fs-6 fw-medium mb-2">Add these cards to:</legend>
+          <div className="form-check">
             <input
               type="radio"
+              id={`dest-collection-${game}`}
+              className="form-check-input"
               name="destination"
               checked={destination === 'collection'}
               onChange={() => setDestination('collection')}
-              style={{ marginRight: '0.5rem' }}
             />
-            Collection only
-          </label>
-          <label style={labelStyle}>
+            <label className="form-check-label" htmlFor={`dest-collection-${game}`}>
+              Collection only
+            </label>
+          </div>
+          <div className="form-check">
             <input
               type="radio"
+              id={`dest-deck-${game}`}
+              className="form-check-input"
               name="destination"
               checked={destination === 'deck'}
               onChange={() => setDestination('deck')}
-              style={{ marginRight: '0.5rem' }}
             />
-            A deck only
-          </label>
-          <label style={labelStyle}>
+            <label className="form-check-label" htmlFor={`dest-deck-${game}`}>
+              A deck only
+            </label>
+          </div>
+          <div className="form-check">
             <input
               type="radio"
+              id={`dest-both-${game}`}
+              className="form-check-input"
               name="destination"
               checked={destination === 'both'}
               onChange={() => setDestination('both')}
-              style={{ marginRight: '0.5rem' }}
             />
-            {importBothLabel}
-          </label>
+            <label className="form-check-label" htmlFor={`dest-both-${game}`}>
+              {importBothLabel}
+            </label>
+          </div>
         </fieldset>
 
         {needsDeck && (
-          <div style={{ marginTop: '0.75rem', paddingLeft: '1.5rem' }}>
-            <label style={labelStyle}>
+          <div className="mt-3 ps-4">
+            <div className="form-check">
               <input
                 type="radio"
+                id={`deck-existing-${game}`}
+                className="form-check-input"
                 checked={deckChoice === 'existing'}
                 onChange={() => setDeckChoice('existing')}
-                style={{ marginRight: '0.5rem' }}
               />
-              Existing deck
-            </label>
+              <label className="form-check-label" htmlFor={`deck-existing-${game}`}>
+                Existing deck
+              </label>
+            </div>
             {deckChoice === 'existing' && (
               <select
                 value={existingDeckId}
                 onChange={(e) => setExistingDeckId(e.target.value)}
-                style={{ ...inputStyle, marginBottom: '0.75rem' }}
+                className="form-select mb-3"
               >
                 <option value="">Choose a deck…</option>
                 {decks.map((deck) => (
@@ -198,64 +183,54 @@ export default function ImportList({ game, title }: Props) {
               </select>
             )}
 
-            <label style={labelStyle}>
+            <div className="form-check">
               <input
                 type="radio"
+                id={`deck-new-${game}`}
+                className="form-check-input"
                 checked={deckChoice === 'new'}
                 onChange={() => setDeckChoice('new')}
-                style={{ marginRight: '0.5rem' }}
               />
-              New deck
-            </label>
+              <label className="form-check-label" htmlFor={`deck-new-${game}`}>
+                New deck
+              </label>
+            </div>
             {deckChoice === 'new' && (
               <input
                 type="text"
                 value={newDeckName}
                 onChange={(e) => setNewDeckName(e.target.value)}
                 placeholder="Deck name…"
-                style={inputStyle}
+                className="form-control"
               />
             )}
           </div>
         )}
 
-        {error && <p style={{ color: '#b3261e', marginTop: '1rem' }}>{error}</p>}
+        {error && <p className="text-danger mt-3">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          style={{
-            marginTop: '1.25rem',
-            padding: '0.6rem 1.2rem',
-            borderRadius: 6,
-            border: '1px solid #333',
-            background: '#fff',
-            cursor: 'pointer',
-          }}
-        >
+        <button type="submit" disabled={submitting} className="btn btn-primary mt-3">
           {submitting ? 'Importing… this can take a bit for long lists' : 'Import'}
         </button>
       </form>
 
       {result && (
-        <div style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #ddd', borderRadius: 8 }}>
-          <p style={{ fontWeight: 500 }}>
+        <div className="mt-4 p-3 border rounded">
+          <p className="fw-medium mb-2">
             Matched and added {result.matched_count} card{result.matched_count === 1 ? '' : 's'}.
           </p>
           {result.deck_id && (
-            <p style={{ fontSize: '0.9rem' }}>
-              <Link href={`/decks/${result.deck_id}`} style={{ textDecoration: 'underline' }}>
-                View the deck →
-              </Link>
+            <p className="small mb-2">
+              <Link href={`/${game}/decks/${result.deck_id}`}>View the deck →</Link>
             </p>
           )}
           {result.failed.length > 0 && (
-            <div style={{ marginTop: '0.75rem' }}>
-              <p style={{ color: '#b3261e', fontSize: '0.9rem' }}>
+            <div className="mt-2">
+              <p className="text-danger small mb-1">
                 {result.failed.length} line{result.failed.length === 1 ? '' : 's'} kept failing to
                 reach {errorSource} (likely a brief rate limit) — try pasting just these again:
               </p>
-              <ul style={{ fontSize: '0.85rem', color: '#666' }}>
+              <ul className="small text-secondary">
                 {result.failed.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
@@ -263,12 +238,12 @@ export default function ImportList({ game, title }: Props) {
             </div>
           )}
           {result.not_found.length > 0 && (
-            <div style={{ marginTop: '0.75rem' }}>
-              <p style={{ color: '#b3261e', fontSize: '0.9rem' }}>
+            <div className="mt-2">
+              <p className="text-danger small mb-1">
                 Couldn&apos;t find a match for {result.not_found.length} line
                 {result.not_found.length === 1 ? '' : 's'} — add these manually:
               </p>
-              <ul style={{ fontSize: '0.85rem', color: '#666' }}>
+              <ul className="small text-secondary">
                 {result.not_found.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
@@ -277,6 +252,6 @@ export default function ImportList({ game, title }: Props) {
           )}
         </div>
       )}
-    </main>
+    </div>
   );
 }

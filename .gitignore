@@ -4,6 +4,10 @@ data/*.db
 data/*.db-*
 .env*.local
 
+# TypeScript's incremental build cache - regenerated on every build, no
+# source content, just machine/build-specific hashes and timestamps.
+*.tsbuildinfo
+
 # Downloaded Yugioh card art - copyrighted, re-hosted locally only per
 # YGOPRODeck's terms, never committed. Regenerated on demand as cards are added.
 public/ygo-images/

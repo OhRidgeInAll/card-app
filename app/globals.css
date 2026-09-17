@@ -5,10 +5,96 @@
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #1a1a1a;
-  background: #fafafa;
+  background: var(--bs-body-bg, #fafafa);
+  color: var(--bs-body-color, #1a1a1a);
 }
 
 a {
   color: inherit;
+}
+
+/*
+ * Per-game palettes. Bootstrap 5.3's precompiled CSS mostly *redeclares*
+ * its own component-level variables (e.g. .btn-primary sets its own
+ * --bs-btn-bg locally) rather than referencing --bs-primary live, so
+ * overriding --bs-primary alone doesn't retheme buttons/active states -
+ * confirmed by inspecting node_modules/bootstrap/dist/css/bootstrap.css.
+ * Each game block below sets the semantic root variables AND the specific
+ * component variables this app's components actually use, scoped under
+ * that game's wrapper so a Sass rebuild is never needed to retheme.
+ */
+[data-game] {
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  min-height: 100vh;
+}
+
+[data-game='mtg'] {
+  --bs-primary: #b3261e;
+  --bs-primary-rgb: 179, 38, 30;
+  --bs-secondary: #8a8a8a;
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #2b1a1a;
+  --bs-border-color: #e0c9c9;
+  --bs-link-color: #b3261e;
+  --bs-link-color-rgb: 179, 38, 30;
+  --game-accent: #b3261e;
+  --game-accent-hover: #9c211a;
+  --game-accent-active: #841c16;
+}
+
+[data-game='yugioh'] {
+  --bs-primary: #7a5230;
+  --bs-primary-rgb: 122, 82, 48;
+  --bs-secondary: #c9a227;
+  --bs-body-bg: #fdf6ea;
+  --bs-body-color: #3a2c1a;
+  --bs-border-color: #e2d3ac;
+  --bs-link-color: #7a5230;
+  --bs-link-color-rgb: 122, 82, 48;
+  --game-accent: #7a5230;
+  --game-accent-hover: #6b4729;
+  --game-accent-active: #5c3d23;
+}
+
+[data-game='hololive'] {
+  --bs-primary: #0e7c9c;
+  --bs-primary-rgb: 14, 124, 156;
+  --bs-secondary: #1565c0;
+  --bs-body-bg: #f2fbfd;
+  --bs-body-color: #14262b;
+  --bs-border-color: #bfe3ec;
+  --bs-link-color: #0e7c9c;
+  --bs-link-color-rgb: 14, 124, 156;
+  --game-accent: #0e7c9c;
+  --game-accent-hover: #0c6c88;
+  --game-accent-active: #0a5c74;
+}
+
+[data-game] .btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--game-accent);
+  --bs-btn-border-color: var(--game-accent);
+  --bs-btn-hover-bg: var(--game-accent-hover);
+  --bs-btn-hover-border-color: var(--game-accent-hover);
+  --bs-btn-active-bg: var(--game-accent-active);
+  --bs-btn-active-border-color: var(--game-accent-active);
+  --bs-btn-disabled-bg: var(--game-accent);
+  --bs-btn-disabled-border-color: var(--game-accent);
+}
+
+[data-game] .btn-outline-primary {
+  --bs-btn-color: var(--game-accent);
+  --bs-btn-border-color: var(--game-accent);
+  --bs-btn-hover-bg: var(--game-accent);
+  --bs-btn-hover-border-color: var(--game-accent);
+  --bs-btn-active-bg: var(--game-accent);
+  --bs-btn-active-border-color: var(--game-accent);
+  --bs-btn-disabled-color: var(--game-accent);
+  --bs-btn-disabled-border-color: var(--game-accent);
+}
+
+[data-game] .list-group-item.active {
+  --bs-list-group-active-bg: var(--game-accent);
+  --bs-list-group-active-border-color: var(--game-accent);
 }

@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 interface RouteParams {
-  params: { cardId: string; tagId: string };
+  params: Promise<{ cardId: string; tagId: string }>;
 }
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
-  const cardId = Number(params.cardId);
-  const tagId = Number(params.tagId);
+  const { cardId: cardIdParam, tagId: tagIdParam } = await params;
+  const cardId = Number(cardIdParam);
+  const tagId = Number(tagIdParam);
   if (!Number.isFinite(cardId) || !Number.isFinite(tagId)) {
     return NextResponse.json({ error: 'Invalid card or tag id' }, { status: 400 });
   }

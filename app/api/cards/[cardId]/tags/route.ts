@@ -3,11 +3,12 @@ import { db } from '@/lib/db';
 import { findOrCreateTag } from '@/lib/tags';
 
 interface RouteParams {
-  params: { cardId: string };
+  params: Promise<{ cardId: string }>;
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-  const cardId = Number(params.cardId);
+  const { cardId: cardIdParam } = await params;
+  const cardId = Number(cardIdParam);
   if (!Number.isFinite(cardId)) {
     return NextResponse.json({ error: 'Invalid card id' }, { status: 400 });
   }

@@ -51,24 +51,12 @@ export default function RefreshYgoCacheButton({ meta }: Props) {
   const failureMessage = result && !result.ok ? result.error : !result && meta?.status === 'error' ? meta.error_message : null;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-      <button
-        onClick={handleRefresh}
-        disabled={refreshing}
-        style={{
-          fontSize: '0.9rem',
-          textDecoration: 'underline',
-          background: 'none',
-          border: 'none',
-          cursor: refreshing ? 'default' : 'pointer',
-          padding: 0,
-          color: 'inherit',
-        }}
-      >
+    <div className="d-flex align-items-center gap-2">
+      <button type="button" onClick={handleRefresh} disabled={refreshing} className="btn btn-link btn-sm p-0">
         {refreshing ? 'Refreshing Yu-Gi-Oh! database…' : 'Refresh Yu-Gi-Oh! database'}
       </button>
       {!refreshing && (
-        <span style={{ color: '#888', fontSize: '0.8rem' }}>
+        <span className="small text-secondary">
           {lastGoodRefresh
             ? `(${lastGoodRefresh.rows} cards, last refreshed ${lastGoodRefresh.at!.slice(0, 10)})`
             : '(never refreshed - using live lookups)'}

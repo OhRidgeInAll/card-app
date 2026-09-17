@@ -3,11 +3,12 @@ import { db } from '@/lib/db';
 import { findOrCreateTag } from '@/lib/tags';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-  const deckId = Number(params.id);
+  const { id: idParam } = await params;
+  const deckId = Number(idParam);
   if (!Number.isFinite(deckId)) {
     return NextResponse.json({ error: 'Invalid deck id' }, { status: 400 });
   }

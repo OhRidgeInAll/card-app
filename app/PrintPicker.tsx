@@ -61,70 +61,40 @@ export default function PrintPicker({ itemId, cardName, quantityOwned }: Props) 
   }
 
   return (
-    <div style={{ marginTop: '0.3rem' }}>
-      <button
-        onClick={toggleOpen}
-        style={{
-          fontSize: '0.75rem',
-          color: '#999',
-          background: 'none',
-          border: 'none',
-          textDecoration: 'underline',
-          cursor: 'pointer',
-          padding: 0,
-        }}
-      >
+    <div className="mt-1">
+      <button type="button" onClick={toggleOpen} className="btn btn-link btn-sm text-secondary p-0">
         {open ? 'Close' : 'Change print'}
       </button>
 
       {open && (
-        <div style={{ marginTop: '0.4rem', maxWidth: 280 }}>
-          <p style={{ fontSize: '0.7rem', color: '#999', margin: '0 0 0.3rem' }}>
+        <div className="mt-2" style={{ maxWidth: 280 }}>
+          <p className="small text-secondary mb-1">
             Applies to all {quantityOwned} cop{quantityOwned === 1 ? 'y' : 'ies'} of this card at this condition.
           </p>
-          {loading && <p style={{ fontSize: '0.8rem', color: '#666' }}>Loading printings…</p>}
-          {!loading && printings.length === 0 && <p style={{ fontSize: '0.8rem', color: '#666' }}>No printings found.</p>}
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, maxHeight: 200, overflowY: 'auto' }}>
+          {loading && <p className="small text-secondary">Loading printings…</p>}
+          {!loading && printings.length === 0 && <p className="small text-secondary">No printings found.</p>}
+          <ul className="list-unstyled mb-0" style={{ maxHeight: 200, overflowY: 'auto' }}>
             {printings.map((card) => (
-              <li
-                key={card.external_id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.25rem 0',
-                  borderBottom: '1px solid #eee',
-                }}
-              >
+              <li key={card.external_id} className="d-flex align-items-center gap-2 py-1 border-bottom">
                 {card.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={card.image_url} alt={card.name} width={28} style={{ borderRadius: 3 }} />
+                  <img src={card.image_url} alt={card.name} width={28} className="rounded" />
                 ) : (
-                  <div style={{ width: 28, height: 39, background: '#f0f0f0', borderRadius: 3 }} />
+                  <div className="bg-light rounded" style={{ width: 28, height: 39 }} />
                 )}
-                <span style={{ fontSize: '0.8rem', flex: 1 }}>{card.set_code?.toUpperCase()}</span>
+                <span className="small flex-grow-1">{card.set_code?.toUpperCase()}</span>
                 <button
+                  type="button"
                   onClick={() => applyPrinting(card)}
                   disabled={applyingId === card.external_id}
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: 4,
-                    border: '1px solid #333',
-                    background: '#fff',
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-outline-secondary btn-sm"
                 >
                   {applyingId === card.external_id ? 'Setting…' : 'Use this'}
                 </button>
               </li>
             ))}
           </ul>
-          {hasMore && (
-            <p style={{ fontSize: '0.7rem', color: '#999', marginTop: '0.3rem' }}>
-              More printings exist than shown here.
-            </p>
-          )}
+          {hasMore && <p className="small text-secondary mt-1 mb-0">More printings exist than shown here.</p>}
         </div>
       )}
     </div>
