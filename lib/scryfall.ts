@@ -85,12 +85,22 @@ export async function resolveCardByName(name: string, attempt = 1): Promise<Reso
 }
 
 /**
+ * Scryfall writes foil/promo variants with a star ("217★") that nobody can
+ * type, so a plain asterisk is accepted as a stand-in and swapped back here -
+ * the one place a collector number becomes a Scryfall request.
+ */
+export function normalizeCollectorNumber(collectorNumber: string): string {
+  return collectorNumber.trim().replace(/\*/g, '★');
+}
+
+/**
  * Resolves one exact printing by set code + collector number (e.g. "m10",
  * "146") - used when a decklist line names a specific printing, unlike
  * resolveCardByName's fuzzy name-only match. Same retry/backoff shape.
  */
 export async function resolveExactPrinting(setCode: string, collectorNumber: string, attempt = 1): Promise<ResolveOutcome> {
-  const url = `https://api.scryfall.com/cards/${encodeURIComponent(setCode)}/${encodeURIComponent(collectorNumber)}`;
+  const number = normalizeCollectorNumber(collectorNumber);
+  const url = `https://api.scryfall.com/cards/${encodeURIComponent(setCode)}/${encodeURIComponent(number)}`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
 
   if (res.status === 404) {

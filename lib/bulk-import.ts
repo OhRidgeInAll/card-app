@@ -13,6 +13,16 @@ const SECTION_HEADERS = new Set([
   'main deck', 'extra deck', 'side deck', // Yugioh
 ]);
 
+// Scryfall collector numbers are not always plain digits: they carry letter
+// suffixes ("206p"), star variants ("217★"), and a source-set prefix on The
+// List and promo sets ("DST-40", "2024-5"). Matching only \d here left that
+// text stuck on the card name, which then failed to resolve. "*" is allowed
+// as the typable stand-in for ★ - normalizeCollectorNumber in lib/scryfall.ts
+// swaps it back at lookup time.
+const COLLECTOR_NUMBER = String.raw`[\w★*-]*`;
+const PRINTING_SUFFIX = new RegExp(String.raw`\s*[([]([^)\]]*)[)\]]\s*(${COLLECTOR_NUMBER})\s*$`);
+const PRINTING_SUFFIX_STRIP = new RegExp(String.raw`\s*[([][^)\]]*[)\]]\s*${COLLECTOR_NUMBER}\s*$`);
+
 /**
  * Turns pasted decklist text into a list of { quantity, name } entries.
  * Accepts, per line:
@@ -20,6 +30,7 @@ const SECTION_HEADERS = new Set([
  *   "4 Lightning Bolt"
  *   "4 Lightning Bolt (M10) 146"   - trailing set/collector info is captured
  *                                    as set_code/collector_number (MTG only)
+ *   "1 Staff of Nin (PM13) 217*"   - "*" stands in for the ★ on promo variants
  *   "4, Lightning Bolt"            - simple CSV-style
  *   "1 Namor, Atlantean King"      - commas that are part of the card's own
  *                                    name are preserved, not mistaken for CSV
@@ -54,8 +65,8 @@ export function parseBulkList(text: string): ParsedBulkLine[] {
 
       // "(SET) 123" / "[SET] 123" trailing info captured so copy can be looked up (see
       // resolveExactPrinting in lib/scryfall.ts) card name itself still fuzzymatches, unaffected by this.
-      const printingMatch = rest.match(/\s*[([]([^)\]]*)[)\]]\s*(\d*)\s*$/);
-      const name = rest.replace(/\s*[([][^)\]]*[)\]]\s*\d*\s*$/, '').trim();
+      const printingMatch = rest.match(PRINTING_SUFFIX);
+      const name = rest.replace(PRINTING_SUFFIX_STRIP, '').trim();
       const set_code = printingMatch?.[1]?.trim() || undefined;
       const collector_number = printingMatch?.[2]?.trim() || undefined;
 
